@@ -1,0 +1,66 @@
+═══════════════════════════════════════════════════════════════
+   LIFETRACKER - WINDOWS SETUP CHECKLIST
+═══════════════════════════════════════════════════════════════
+
+Follow this checklist in order. Check off each step as you complete it.
+
+BEFORE YOU START
+────────────────────────────────────────────────────────────────
+[ ] Node.js installed (https://nodejs.org/)
+[ ] PostgreSQL installed (https://www.postgresql.org/download/windows/)
+[ ] You remember your PostgreSQL password
+
+SETUP STEPS
+────────────────────────────────────────────────────────────────
+Step 1: Create Database
+[ ] Open pgAdmin
+[ ] Create new database named "lifetracker"
+
+Step 2: Install Dependencies
+[ ] Open Command Prompt in the lifetracker folder
+[ ] Run: setup-windows.bat
+[ ] Wait for installation to complete (takes 2-5 minutes)
+
+Step 3: Configure Database Connection
+[ ] File "server\.env" should open automatically in Notepad
+[ ] Find the line with "YOUR_PASSWORD_HERE"
+[ ] Replace YOUR_PASSWORD_HERE with your PostgreSQL password
+[ ] Save and close Notepad
+
+Step 4: Setup Database Tables
+[ ] Run: setup-database.bat
+[ ] Wait for migrations to complete
+[ ] Should see "Database setup complete!"
+
+Step 5: Start Application
+[ ] Run: start-app.bat
+[ ] Wait for "Server running" and "Local" messages
+[ ] Open browser to: http://localhost:3000
+
+SUCCESS!
+────────────────────────────────────────────────────────────────
+If you see the login page, you're all set! 🎉
+
+Create an account and start tracking your goals!
+
+TROUBLESHOOTING
+────────────────────────────────────────────────────────────────
+Problem: "psql is not recognized"
+→ That's OK! Just use pgAdmin for Step 1
+
+Problem: "Cannot connect to database"
+→ Check PostgreSQL is running (Services or pgAdmin)
+→ Verify password in server\.env is correct
+→ Make sure database "lifetracker" exists
+
+Problem: "Port already in use"
+→ Run: netstat -ano | findstr :3000
+→ Then: taskkill /PID <number> /F
+
+Problem: Application won't start
+→ Make sure both Step 2 and Step 4 completed successfully
+→ Try closing and running start-app.bat again
+
+For more help, see: README.md or QUICK-START-WINDOWS.md
+
+═══════════════════════════════════════════════════════════════

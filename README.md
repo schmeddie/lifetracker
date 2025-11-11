@@ -2,6 +2,16 @@
 
 A secure, full-stack, mobile-responsive web application for personal goal tracking, habit streaks, and mood logging with a clean, minimalist UI.
 
+---
+
+## 🚀 Quick Start
+
+**Windows Users**: See [QUICK-START-WINDOWS.md](QUICK-START-WINDOWS.md) for the super simple setup guide with automated scripts!
+
+**All Users**: Jump to [Installation Instructions](#prerequisites) below for detailed setup.
+
+---
+
 ## Features
 
 ### Core Functionality
