@@ -52,59 +52,180 @@ A secure, full-stack, mobile-responsive web application for personal goal tracki
 
 ## Prerequisites
 
-- Node.js (v18 or higher)
-- PostgreSQL (v14 or higher)
-- npm or yarn
+### Required Software
+1. **Node.js (v18 or higher)** - [Download here](https://nodejs.org/)
+2. **PostgreSQL (v14 or higher)** - [Download here](https://www.postgresql.org/download/)
+3. **Git** (for cloning) - [Download here](https://git-scm.com/downloads)
 
-## Installation
-
-### 1. Clone the repository
+### Installation Check
+After installing, verify in your terminal:
 ```bash
-git clone <repository-url>
-cd lifetracker
+node --version    # Should show v18 or higher
+npm --version     # Should show 9.0 or higher
+psql --version    # Should show PostgreSQL 14 or higher
 ```
 
-### 2. Install dependencies
-```bash
-npm install
-cd client && npm install
-cd ../server && npm install
-cd ..
-```
+---
 
-### 3. Set up the database
+## 🪟 Windows Setup (Step-by-Step)
 
-Create a PostgreSQL database:
+### Step 1: Install PostgreSQL
+
+1. Download PostgreSQL from https://www.postgresql.org/download/windows/
+2. Run the installer
+3. **IMPORTANT**: Remember the password you set for the `postgres` user!
+4. Keep the default port: `5432`
+5. Complete the installation
+
+### Step 2: Create Database
+
+**Option A - Using pgAdmin (Easiest for Windows):**
+1. Open pgAdmin (installed with PostgreSQL)
+2. Enter your postgres password
+3. Right-click "Databases" → "Create" → "Database"
+4. Name it: `lifetracker`
+5. Click "Save"
+
+**Option B - Using Command Line:**
 ```bash
+# Open Command Prompt or PowerShell
 psql -U postgres
+# Enter your postgres password when prompted
+```
+
+Then type:
+```sql
 CREATE DATABASE lifetracker;
 \q
 ```
 
-### 4. Configure environment variables
+### Step 3: Clone and Install
 
-Create a `.env` file in the `server` directory:
+Open Command Prompt or PowerShell in your projects folder:
+
 ```bash
-cd server
-cp .env.example .env
+# Clone the repository
+git clone <repository-url>
+cd lifetracker
+
+# Install all dependencies (this takes a few minutes)
+npm install
+cd client
+npm install
+cd ../server
+npm install
+cd ..
 ```
 
-Edit `.env` with your database credentials:
+### Step 4: Configure Environment
+
+```bash
+# Go to server folder
+cd server
+
+# Copy the example file (Windows)
+copy .env.example .env
+
+# Now edit the .env file
+notepad .env
+```
+
+**Edit these values in the .env file:**
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/lifetracker?schema=public"
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD_HERE@localhost:5432/lifetracker?schema=public"
 PORT=3001
 NODE_ENV=development
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_SECRET=change-this-to-any-random-string-you-want
 JWT_EXPIRES_IN=7d
 ```
 
-### 5. Run database migrations
+**Replace `YOUR_PASSWORD_HERE` with your actual PostgreSQL password!**
+
+Save and close Notepad.
+
+### Step 5: Set Up Database Tables
 
 ```bash
-cd server
+# Make sure you're in the server folder
+# If not: cd server
+
+# Create database tables
 npx prisma migrate dev --name init
+
+# Generate Prisma client
 npx prisma generate
 ```
+
+If you see any errors about the database not existing, go back to Step 2.
+
+### Step 6: Start the Application
+
+```bash
+# Go back to project root
+cd ..
+
+# Start both frontend and backend
+npm run dev
+```
+
+**You should see:**
+- ✓ Server running on http://localhost:3001
+- ✓ Frontend running on http://localhost:3000
+
+Open your browser and go to: **http://localhost:3000**
+
+---
+
+## 🍎 Mac/Linux Setup (Quick)
+
+### Step 1: Install PostgreSQL
+```bash
+# Mac (using Homebrew)
+brew install postgresql@14
+brew services start postgresql@14
+
+# Ubuntu/Debian
+sudo apt-get install postgresql postgresql-contrib
+sudo service postgresql start
+```
+
+### Step 2: Create Database
+```bash
+createdb lifetracker
+```
+
+### Step 3: Install and Configure
+```bash
+# Install dependencies
+npm install
+cd client && npm install
+cd ../server && npm install
+cd ..
+
+# Configure environment
+cd server
+cp .env.example .env
+nano .env  # or use your preferred editor
+```
+
+Edit the DATABASE_URL:
+```env
+DATABASE_URL="postgresql://postgres:password@localhost:5432/lifetracker?schema=public"
+```
+
+### Step 4: Set Up Database
+```bash
+npx prisma migrate dev --name init
+npx prisma generate
+cd ..
+```
+
+### Step 5: Run
+```bash
+npm run dev
+```
+
+Visit: http://localhost:3000
 
 ## Running the Application
 
@@ -276,18 +397,129 @@ lifetracker/
 
 ## Troubleshooting
 
-### Database Connection Issues
-- Ensure PostgreSQL is running
-- Check `DATABASE_URL` in `.env`
-- Run `npx prisma migrate dev` to apply migrations
+### ❌ "psql is not recognized" (Windows)
+**Problem**: PostgreSQL not in your system PATH
 
-### Port Conflicts
-- Backend default: 3001 (change in `server/.env`)
-- Frontend default: 3000 (change in `client/vite.config.ts`)
+**Solution**:
+1. Find your PostgreSQL installation (usually `C:\Program Files\PostgreSQL\15\bin`)
+2. Add it to your PATH:
+   - Search Windows for "Environment Variables"
+   - Click "Environment Variables"
+   - Under "System variables", find "Path"
+   - Click "Edit" → "New"
+   - Add: `C:\Program Files\PostgreSQL\15\bin` (adjust version number)
+   - Click OK on all windows
+   - **Restart your terminal**
 
-### Build Errors
-- Clear node_modules and reinstall: `rm -rf node_modules && npm install`
-- Regenerate Prisma client: `cd server && npx prisma generate`
+**OR** just use pgAdmin (GUI) - easier!
+
+### ❌ "Database does not exist"
+**Problem**: Database wasn't created
+
+**Solution**:
+1. Open pgAdmin
+2. Create database named `lifetracker`
+3. Run migrations again: `cd server` then `npx prisma migrate dev --name init`
+
+### ❌ "Port 3000 is already in use"
+**Problem**: Another app is using port 3000 or 3001
+
+**Windows Solution**:
+```bash
+# Find what's using the port
+netstat -ano | findstr :3000
+
+# Kill the process (replace PID with the number from above)
+taskkill /PID <PID> /F
+```
+
+**Or change the port**:
+- Frontend: Edit `client/vite.config.ts` and change `port: 3000` to `port: 3005`
+- Backend: Edit `server/.env` and change `PORT=3001` to `PORT=3002`
+
+### ❌ "Cannot connect to database"
+**Problem**: Wrong password or PostgreSQL not running
+
+**Solution**:
+1. Check PostgreSQL is running:
+   - Windows: Open Services → Find "postgresql" → Should say "Running"
+   - Or open pgAdmin - if it connects, PostgreSQL is running
+2. Check your password in `server/.env` matches your PostgreSQL password
+3. Make sure the database exists (should see `lifetracker` in pgAdmin)
+
+### ❌ "Module not found" errors
+**Problem**: Dependencies not installed properly
+
+**Solution**:
+```bash
+# Windows - delete node_modules folders
+cd lifetracker
+rmdir /s /q node_modules
+cd client
+rmdir /s /q node_modules
+cd ../server
+rmdir /s /q node_modules
+cd ..
+
+# Reinstall everything
+npm install
+cd client
+npm install
+cd ../server
+npm install
+cd ..
+```
+
+### ❌ "Prisma Client did not initialize yet"
+**Problem**: Prisma client not generated
+
+**Solution**:
+```bash
+cd server
+npx prisma generate
+cd ..
+```
+
+### ❌ Application starts but shows blank page
+**Problem**: Frontend can't reach backend
+
+**Solution**:
+1. Make sure BOTH servers are running (you should see two terminals/command prompts)
+2. Backend should show: "Server running on http://localhost:3001"
+3. Frontend should show: "Local: http://localhost:3000"
+4. Open browser to http://localhost:3000 (not 3001)
+
+### ❌ "git is not recognized"
+**Problem**: Git not installed
+
+**Solution**:
+1. Download Git from: https://git-scm.com/downloads
+2. Install it
+3. Restart your terminal
+4. Try again
+
+### 🆘 Still Having Issues?
+
+1. **Make sure PostgreSQL is running**
+   - Windows: Check Services or pgAdmin
+   - Mac: `brew services list`
+   - Linux: `sudo systemctl status postgresql`
+
+2. **Verify all prerequisites are installed**:
+   ```bash
+   node --version    # Should show v18+
+   npm --version     # Should show 9+
+   psql --version    # Should show PostgreSQL 14+
+   ```
+
+3. **Check the terminal output for specific error messages**
+   - Red text usually indicates the problem
+   - Copy the error and search online if needed
+
+4. **Common Windows Issues**:
+   - Use Command Prompt or PowerShell (not Git Bash for npm commands)
+   - Run as Administrator if you get permission errors
+   - Disable antivirus temporarily if it's blocking Node.js
 
 ## Future Enhancements
 
