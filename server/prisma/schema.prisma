@@ -1,0 +1,157 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  name          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  goals         Goal[]
+  categories    Category[]
+  dailyLogs     DailyLog[]
+  calendarEvents CalendarEvent[]
+  rewards       UserReward[]
+
+  @@map("users")
+}
+
+enum GoalType {
+  HABIT   // Binary yes/no tracking (e.g., "Worked Out")
+  METRIC  // Numerical value tracking (e.g., "Run 5 km")
+  TIME    // Duration tracking (e.g., "Meditate 10 minutes")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  color     String?  // Optional color for UI
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  goals     Goal[]
+
+  @@unique([userId, name])
+  @@map("categories")
+}
+
+model Goal {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  type        GoalType
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  // For METRIC goals
+  targetValue Float?
+  unit        String?    // e.g., "km", "£", "pages"
+
+  // For TIME goals
+  targetMinutes Int?
+
+  isActive    Boolean    @default(true)
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  totalProgress Float    @default(0) // For METRIC/TIME goals
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  progress    GoalProgress[]
+
+  @@map("goals")
+}
+
+model DailyLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @default(now())
+
+  // Mood tracking (1-5 scale)
+  mood        Int?     // 1 = Terrible, 5 = Great
+  journal     String?  @db.Text // Optional daily note (max 500 chars enforced in app)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@map("daily_logs")
+}
+
+model GoalProgress {
+  id          String   @id @default(uuid())
+  goalId      String
+  goal        Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  date        DateTime @default(now())
+
+  // For HABIT goals
+  completed   Boolean  @default(false)
+
+  // For METRIC goals
+  value       Float?
+
+  // For TIME goals
+  minutes     Int?
+
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@unique([goalId, date])
+  @@map("goal_progress")
+}
+
+enum EventType {
+  UK_HOLIDAY
+  CUSTOM
+  MILESTONE
+}
+
+model CalendarEvent {
+  id          String    @id @default(uuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  date        DateTime
+  eventType   EventType @default(CUSTOM)
+
+  createdAt   DateTime  @default(now())
+
+  @@map("calendar_events")
+}
+
+enum BadgeType {
+  BRONZE  // 7 days
+  SILVER  // 30 days
+  GOLD    // 100 days
+  PLATINUM // 365 days
+}
+
+model UserReward {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  badgeType   BadgeType
+  goalTitle   String    // Store goal title for reference
+  streakDays  Int
+  awardedAt   DateTime  @default(now())
+
+  @@map("user_rewards")
+}
